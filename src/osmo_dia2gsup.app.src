@@ -1,0 +1,13 @@
+{application, osmo_dia2gsup, [
+	{decription, "Osmocom DIAMETER -> GSUP translator"},
+	{vsn, "1"},
+	{registered, []},
+	{applications, [
+			kernel,
+			stdlib,
+			lager,
+			diameter
+			]},
+	{mod, {osmo_dia2gsup_app, []}},
+	{env, []}
+]}.

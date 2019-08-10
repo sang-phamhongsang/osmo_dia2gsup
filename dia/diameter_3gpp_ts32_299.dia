@@ -33,6 +33,7 @@
 @inherits diameter_3gpp_ts29_212
 @inherits diameter_3gpp_ts29_214
 @inherits diameter_3gpp_ts29_329
+@inherits diameter_3gpp_ts29_229
 
 ;; ===========================================================================
 
