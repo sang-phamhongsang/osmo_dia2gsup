@@ -59,7 +59,7 @@
    Supported-Features                          628       Grouped     V
    Feature-List-ID                             629    Unsigned32     V
    Feature-List                                630    Unsigned32     V
-;; Supported-Applications                      631       Grouped     V
+   Supported-Applications                      631       Grouped     V
 ;; Associated-Identities                       632       Grouped     V
    Originating-Request                         633    Enumerated    MV
    Wildcarded-Public-Identity                  634    UTF8String     V
@@ -104,3 +104,9 @@
                               { Feature-List-ID }
                               { Feature-List }
                             * [ AVP ]
+
+	Supported-Applications ::= < AVP Header: 631 10415 >
+		*[ Auth-Application-Id ] 
+		*[ Acct-Application-Id ]
+		*[ Vendor-Specific-Application-Id ]
+		*[ AVP ]
