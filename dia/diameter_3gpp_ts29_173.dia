@@ -39,6 +39,7 @@
 ;; @inherits diameter_3gpp_ts29_214
 @inherits diameter_3gpp_ts29_229
 @inherits diameter_3gpp_ts29_329
+@inherits diameter_3gpp_break_circles
 
 ;;@inherits diameter_rfc5447
 ;;@inherits diameter_rfc5778
@@ -47,8 +48,6 @@
 @avp_types
 
 	3GPP-AAA-Server-Name	318	DiameterIdentity	MV	;; from 29.273
-	SGSN-Number		1489	OctetString		MV	;; from 29.272
-	GMLC-Number		1474	OctetString		MV	;; from 29.272
 
 	LMSI			2400	OctetString		MV
 	Serving-Node		2401	Grouped			MV

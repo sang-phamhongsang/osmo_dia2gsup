@@ -31,14 +31,13 @@
 @vendor 10415 3GPP
 
 @inherits diameter_gen_base_rfc6733
-;; @inherits diameter_rfc4005_nasreq
-;; @inherits diameter_rfc4006_cc
 @inherits diameter_3gpp_base
-;; @inherits diameter_etsi_es283_034
-;; @inherits diameter_3gpp_ts29_061_gmb
-;; @inherits diameter_3gpp_ts29_214
+@inherits diameter_3gpp_ts29_214
 @inherits diameter_3gpp_ts29_229
+@inherits diameter_3gpp_ts29_329
 @inherits diameter_3gpp_ts29_173
+@inherits diameter_3gpp_ts32_299
+@inherits diameter_3gpp_break_circles
 
 @inherits diameter_rfc5447
 @inherits diameter_rfc5778
@@ -72,8 +71,8 @@
 	Context-Identifier			1423	Unsigned32	MV
 	Subscriber-Status			1424	Enumerated	MV
 	Operator-Determined-Barring		1425	Unsigned32	MV
-	Access-Restriction-data			1426	Unsigned32	MV
-	APN-OI-Replacement			1427	UTF8String	MV
+	Access-Restriction-Data			1426	Unsigned32	MV
+	;;APN-OI-Replacement			1427	UTF8String	MV
 	All-APN-Configurations-Included-Indicator 1428	Enumerated	MV
 	APN-Configuration-Profile		1429	Grouped		MV
 	APN-Configuration			1430	Grouped		MV
@@ -116,7 +115,7 @@
 	3GPP2-MEID				1471	OctetString	MV
 	Specific-APN-Info			1472	Grouped		MV
 	LCS-Info				1473	Grouped		MV
-	GMLC-Number				1474	OctetString	MV
+	;;GMLC-Number				1474	OctetString	MV
 	LCS-PrivacyException			1475	Grouped		MV
 	SS-Code					1476	OctetString	MV
 	SS-Status				1477	OctetString	MV
@@ -131,7 +130,7 @@
 	Teleservice-List			1486	Grouped		MV
 	TS-Code					1487	OctetString	MV
 	Call-Barring-Info			1488	Grouped		MV
-	SGSN-Number				1489	OctetString	MV
+	;;SGSN-Number				1489	OctetString	MV
 	IDR-Flags				1490	Unsigned32	MV
 	ICS-Indicator				1491	Enumerated	V
 	IMS-Voice-Over-PS-Sessions-Supported	1492	Enumerated	V
@@ -161,7 +160,7 @@
 	MPS-Priority				1616	Unsigned32	V
 	VPLMN-LIPA-Allowed			1617	Enumerated	V
 	LIPA-Permission				1618	Enumerated	V
-	Subscribed-Periodic-PRAU-TAU-Timer	1619	Unsigned32	V
+	Subscribed-Periodic-RAU-TAU-Timer	1619	Unsigned32	V
 	Ext-PDP-Type				1620	OctetString	V
 	SIPTO-Permission			1613	Enumerated	V
 	MDT-Configuration			1622	Grouped		V
@@ -169,7 +168,7 @@
 	Area-Scope				1624	Grouped		V
 	List-Of-Measurements			1625	Unsigned32	V
 	Reporting-Trigger			1626	Unsigned32	V
-	Report-Inteerval			1627	Enumerated	V
+	Report-Interval				1627	Enumerated	V
 	Report-Amount				1628	Enumerated	V
 	Event-Threshold-RSRP			1629	Unsigned32	V
 	Event-Threshold-RSRQ			1630	Unsigned32	V
@@ -199,7 +198,7 @@
 	Measurement-Quantity			1660	OctetString	V
 	Event-Threshold-Event-1F		1661	Integer32	V
 	Event-Threshold-Event-1I		1662	Integer32	V
-	Restoration-Policy			1663	Unsigned32	V
+	Restoration-Priority			1663	Unsigned32	V
 
 @messages
 
@@ -223,8 +222,7 @@
 		[ GMLC-Address ]
 		[ Equivalent-PLMN-List ]
 		[ MME-Number-for-MT-SMS ]
-		[ SMS-Only ]
-		[ SMS-Reqister-Request ]
+		[ SMS-Register-Request ]
 		*[ Supported-Features ]
 		*[ Active-APN ]
 		*[ Proxy-Info ]
@@ -701,8 +699,15 @@ Terminal-Information ::= <AVP Header: 1401 10415>
 	[Software-Version]
 	*[AVP]
 
-;; 7.3.12
+;; 7.3.11
 Requested-EUTRAN-Authentication-Info ::= <AVP Header: 1408 10415>
+	[ Number-Of-Requested-Vectors]
+	[ Immediate-Response-Preferred ]
+	[ Re-Synchronization-Info ]
+	*[AVP]
+
+;; 7.3.12
+Requested-UTRAN-GERAN-Authentication-Info ::= <AVP Header: 1409 10415>
 	[ Number-Of-Requested-Vectors]
 	[ Immediate-Response-Preferred ]
 	[ Re-Synchronization-Info ]
@@ -958,8 +963,8 @@ MDT-Configuration ::= <AVP Header: 1622 10415>
 	[ Logging-Duration ]
 	[ Measurement-Period-LTE ]
 	[ Measurement-Period-UMTS ]
-	[ Collection-Period-RMM-LTE ]
-	[ Collection-Period-RRM-UMTS ]
+;;	[ Collection-Period-RMM-LTE ]
+;;	[ Collection-Period-RRM-UMTS ]
 	[ Positioning-Method ]
 	[ Measurement-Quantity]
 	[Event-Threshold-Event-1F]

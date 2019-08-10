@@ -42,6 +42,10 @@
 
 @inherits diameter_rfc7944
 @inherits diameter_rfc7683
+@inherits diameter_rfc6942
+@inherits diameter_rfc4072
+@inherits diameter_rfc6734
+@inherits diameter_3gpp_break_circles
 ;;@inherits diameter_rfc5778
 ;;@inherits diameter_3gpp_ts29_212
 
@@ -55,7 +59,7 @@
 	APN-Configuration		1430	Grouped		MV
 	ANID				1504	UTF8String	MV
 	Trace-Info			1505	Grouped		V
-	AN-Truested			1503	Enumerated	MV
+	AN-Trusted			1503	Enumerated	MV
 	MIP-FA-RK			1506	OctetString	MV
 	MIP-FA-RK-SPI			1507	Unsigned32	MV
 	PPR-Flags			1508	Unsigned32	V
@@ -145,7 +149,7 @@
 		*[ Redirect-Host ]
 		[ AN-Trusted ]
 		[ Trace-Info ]
-		[ Subscription-ID ]
+		[ Subscription-Id ]
 		[ OC-Supported-Features ]
 		[ OC-OLR ]
 		;;*[ Load ]
@@ -269,7 +273,7 @@
 		*[ APN-Configuration ]
 		[ 3GPP-Charging-Characteristics ]
 		[ Trace-Info ]
-		[ Subscription-ID ]
+		[ Subscription-Id ]
 		[ OC-Supported-Features ]
 		[ OC-OLR ]
 		[ UE-Usage-Type ]
@@ -279,6 +283,10 @@
 
 @enum Transport-Acess-Type
 	BBF			0
+
+@enum AN-Trusted
+	TRUSTED			0
+	UNTRUSTED		1
 
 @grouped
 
@@ -305,4 +313,9 @@ TWAN-Connectivity-Parameters ::= < AVP Header: 1528 10415 >
 	[ TWAG-UP-Address ]
 	[ TWAN-S2a-Failure-Cause ]
 	[ SM-Back-Off-Timer ]
+	*[ AVP ] 
+
+TWAN-Access-Info::= < AVP Header: 1510 10415 >
+	[ Access-Authorization-Flags ]
+	[ WLAN-Identifier ]
 	*[ AVP ] 
