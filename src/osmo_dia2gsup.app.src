@@ -1,5 +1,5 @@
 {application, osmo_dia2gsup, [
-	{decription, "Osmocom DIAMETER -> GSUP translator"},
+	{description, "Osmocom DIAMETER -> GSUP translator"},
 	{vsn, "1"},
 	{registered, []},
 	{applications, [

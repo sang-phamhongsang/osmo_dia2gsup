@@ -27,23 +27,14 @@
 
 @id     16777291
 @name   diameter_3gpp_ts29_173
-@prefix diameter_aaa
+;;@prefix diameter_3gpp
 @vendor 10415 3GPP
 
 @inherits diameter_gen_base_rfc6733
-;; @inherits diameter_rfc4005_nasreq
-;; @inherits diameter_rfc4006_cc
 @inherits diameter_3gpp_base
-;; @inherits diameter_etsi_es283_034
-;; @inherits diameter_3gpp_ts29_061_gmb
-;; @inherits diameter_3gpp_ts29_214
 @inherits diameter_3gpp_ts29_229
 @inherits diameter_3gpp_ts29_329
 @inherits diameter_3gpp_break_circles
-
-;;@inherits diameter_rfc5447
-;;@inherits diameter_rfc5778
-;;@inherits diameter_3gpp_ts29_272
 
 @avp_types
 

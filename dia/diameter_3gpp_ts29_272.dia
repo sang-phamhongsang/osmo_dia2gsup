@@ -27,7 +27,7 @@
 
 @id     16777251
 @name   diameter_3gpp_ts29_272
-@prefix diameter_aaa
+;;@prefix diameter_3gpp
 @vendor 10415 3GPP
 
 @inherits diameter_gen_base_rfc6733

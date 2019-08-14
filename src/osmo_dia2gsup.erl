@@ -25,11 +25,13 @@
 -define(CALLBACK_MOD, server_cb).
 -define(DIAMETER_DICT_HSS, diameter_3gpp_ts29_272).
 
+-define(APPID_S6, #'diameter_base_Vendor-Specific-Application-Id'{'Vendor-Id'=10515, 'Auth-Application-Id'=[16777251]}).
 -define(SERVICE(Name), [{'Origin-Host', application:get_env(osmo_dia2gsup, origin_host, "hss.localdomain")},
-			{'Origin-Realm', applicaiton:get_env(osmo_dia2gsup, origin_realm, "localdomain")},
+			{'Origin-Realm', application:get_env(osmo_dia2gsup, origin_realm, "localdomain")},
 			{'Vendor-Id', application:get_env(osmo_dia2gsup, vendor_id, 0)},
 			{'Product-Name', "osmo_dia2gsup"},
 			{'Auth-Application-Id', []},
+			{'Vendor-Specific-Application-Id', [?APPID_S6]},
 			{application,
 			 	[{alias, ?APP_ALIAS},
 				 {dictionary, ?DIAMETER_DICT_HSS},
@@ -46,7 +48,7 @@ start_link() ->
 	gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 start() ->
-	application:sensure_all_started(?MODULE),
+	application:ensure_all_started(?MODULE),
 	start_link().
 
 stop() ->
@@ -58,13 +60,19 @@ stop() ->
 
 %% @callback gen_server
 init(State) ->
+	% DIAMETER side
 	SvcName = ?MODULE,
 	diameter:start_service(SvcName, ?SERVICE(SvcName)),
-	Ip = application:get_env(osmo_dia2gsup, diameter_ip, "127.0.0.1"),
+	Ip = application:get_env(osmo_dia2gsup, diameter_ip, "127.0.0.4"),
 	Port = application:get_env(osmo_dia2gsup, diameter_port, 3868),
-	Proto = applicaiton:get_env(osmo_dia2gsup, diameter_proto, sctp),
+	Proto = application:get_env(osmo_dia2gsup, diameter_proto, sctp),
 	listen({address, Proto, element(2,inet:parse_address(Ip)), Port}),
 	lager:info("Diameter HSS Application started on IP ~s, ~p port ~p~n", [Ip, Proto, Port]),
+	% GSUP side
+	HlrIp = application:get_env(osmo_dia2gsup, hlr_ip, "127.0.0.1"),
+	HlrPort = application:get_env(osmo_dia2gsup, hlr_port, 4222),
+	lager:info("Connecting to GSUP HLR on IP ~s port ~p~n", [HlrIp, HlrPort]),
+	{ok, _Pid} = gen_server:start_link({local, gsup_client}, gsup_client, [HlrIp, HlrPort, []], [{debug, [trace]}]),
 	{ok, State}.
 
 %% @callback gen_server
@@ -108,7 +116,7 @@ listen(Name, {address, Protocol, IPAddr, Port}) ->
 	TransOpts = [{transport_module, tmod(Protocol)},
 		     {transport_config, [{reuseaddr, true},
 		      			 {ip, IPAddr}, {port, Port}]}],
-	diameter:add_transport(Name, {listen, TransOpts}).
+	{ok, _} = diameter:add_transport(Name, {listen, TransOpts}).
 
 listen(Address) ->
 	listen(?SVC_NAME, Address).
