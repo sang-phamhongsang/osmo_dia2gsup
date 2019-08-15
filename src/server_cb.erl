@@ -94,14 +94,41 @@ req_num_of_vec([#'Requested-UTRAN-GERAN-Authentication-Info'{'Number-Of-Requeste
 req_num_of_vec([#'Requested-UTRAN-GERAN-Authentication-Info'{'Number-Of-Requested-Vectors'=[Num]}]) -> Num;
 req_num_of_vec(_) -> false.
 
+-define(PDP_TYPE_DEFAULT, <<0,0,0,16#21>>).	% IPv4
+-define(PDP_QOS_DEFAULT, <<0,0,0,0,0,0,0,0,0,0,0,0,0,0>>). % fixme
+
 -spec gsup_pdp2dia('GSUPPdpInfo'()) -> #'PDP-Context'{}.
 gsup_pdp2dia(GsupPdpInfo) ->
-	#'PDP-Context'{'PDP-Type' = maps:get(pdp_type, GsupPdpInfo),
+	#'PDP-Context'{'PDP-Type' = maps:get(pdp_type, GsupPdpInfo, ?PDP_TYPE_DEFAULT),
 		       'Context-Identifier' = maps:get(pdp_context_id, GsupPdpInfo),
-		       'PDP-Address' = maps:get(access_point_name, GsupPdpInfo),
-		       'Service-Selection' = fixme,
-		       'QoS-Subscribed' = maps:get(quality_of_service, GsupPdpInfo)
+		       'Service-Selection' = maps:get(access_point_name, GsupPdpInfo),
+		       'QoS-Subscribed' = maps:get(quality_of_service, GsupPdpInfo, ?PDP_QOS_DEFAULT)
 		      }.
+
+-define(PDN_TYPE_DEFAULT, 0).	% IPv4
+-define(EPS_QOS_DEFAULT,
+	#'EPS-Subscribed-QoS-Profile'{'QoS-Class-Identifier'=9,
+				      'Allocation-Retention-Priority'=
+		#'Allocation-Retention-Priority'{'Priority-Level'=8,
+						 'Pre-emption-Capability'=1,
+						 'Pre-emption-Vulnerability'=1}
+	}).
+
+-spec gsup_pdp2dia_apn('GSUPPdpInfo'()) -> #'APN-Configuration'{}.
+gsup_pdp2dia_apn(GsupPdpInfo) ->
+	#'APN-Configuration'{'Context-Identifier' = maps:get(pdp_context_id, GsupPdpInfo),
+			     'PDN-Type' = maps:get(pdp_type, GsupPdpInfo, ?PDN_TYPE_DEFAULT),
+			     % The EPS-Subscribed-QoS-Profile AVP and the AMBR AVP shall be present in the
+			     % APN-Configuration AVP when the APN-Configuration AVP is sent in the
+			     % APN-Configuration-Profile AVP and when the APN-Configuration-Profile AVP is
+			     % sent within a ULA (as part of the Subscription-Data AVP).
+			     'EPS-Subscribed-QoS-Profile' = ?EPS_QOS_DEFAULT,
+			     'AMBR' = #'AMBR'{'Max-Requested-Bandwidth-UL' = 100000000,
+					      'Max-Requested-Bandwidth-DL' = 100000000},
+			     % The default APN Configuration shall not contain the Wildcard APN (see 3GPP TS
+			     % 23.003 [3], clause 9.2); the default APN shall always contain an explicit APN
+			     'Service-Selection' = "internet"%maps:get(access_point_name, GsupPdpInfo)
+			    }.
 
 % transient (only in Experimental-Result-Code)
 -define(DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE,	4181).
@@ -183,7 +210,8 @@ handle_request(#diameter_packet{msg = Req, errors = []}, _SvcName, {_, Caps}) wh
 	       'User-Name' = UserName} = Req,
 
 	% construct GSUP UpdateLocation request to HLR and transceive it; expect InsertSubscrDataReq
-	GsupTxUlReq = #{message_type => location_upd_req, cn_domain => fixme},
+	GsupTxUlReq = #{message_type => location_upd_req, imsi => list_to_binary(UserName),
+			cn_domain => 1},
 	GsupRxIsdReq = gen_server:call(gsup_client,
 				{transceive_gsup, GsupTxUlReq, insert_sub_data_req, location_upd_err}),
 	lager:info("GsupRxIsdReq: ~p~n", [GsupRxIsdReq]),
@@ -196,7 +224,8 @@ handle_request(#diameter_packet{msg = Req, errors = []}, _SvcName, {_, Caps}) wh
 		#{message_type:=insert_sub_data_req} ->
 			% construct GSUP InsertSubscrData response to HLR and transceive it; expect
 			% UpdateLocationRes
-			GsupTxIsdRes = #{message_type => insert_sub_data_res},
+			GsupTxIsdRes = #{message_type => insert_sub_data_res,
+					 imsi => list_to_binary(UserName)},
 			GsupRxUlRes = gen_server:call(gsup_client,
 				{transceive_gsup, GsupTxIsdRes, location_upd_res, location_upd_err}),
 			lager:info("GsupRxUlRes: ~p~n", [GsupRxUlRes]),
@@ -204,15 +233,37 @@ handle_request(#diameter_packet{msg = Req, errors = []}, _SvcName, {_, Caps}) wh
 			case GsupRxUlRes of
 				#{message_type:=location_upd_res} ->
 					Msisdn = twomap_get(msisdn, GsupRxIsdReq, GsupRxUlRes, []),
-					Compl = twomap_get(pdp_info_complete, GsupRxIsdReq, GsupRxUlRes, []),
+					Compl = twomap_get(pdp_info_complete, GsupRxIsdReq, GsupRxUlRes, 0),
+
+					% build the GPRS Subscription Data
 					PdpInfoList = twomap_get(pdp_info_list, GsupRxIsdReq, GsupRxUlRes, []),
-					PdpContexts = gsup_pdp2dia(PdpInfoList),
-					GSubD = #'GPRS-Subscription-Data'{'Complete-Data-List-Included-Indicator'=[Compl],
+					PdpContexts = lists:map(fun gsup_pdp2dia/1, PdpInfoList),
+					GSubD = #'GPRS-Subscription-Data'{'Complete-Data-List-Included-Indicator'=Compl,
 									  'PDP-Context'=PdpContexts},
-					SubscrData = #'Subscription-Data'{'MSISDN'=Msisdn,'GPRS-Subscription-Data'=GSubD},
-					Resp = #'ULA'{'Session-Id'= SessionId, 'Auth-Session-State'=1,
-						      'Origin-Host'=OH, 'Origin-Realm'=OR,
-						      'Result-Code'=2001, 'Subscription-Data'=SubscrData};
+
+					% build the APN-Configuration-Profile
+					ApnCfgList = lists:map(fun gsup_pdp2dia_apn/1, PdpInfoList),
+					FirstApn = lists:nth(1, ApnCfgList),
+					DefaultCtxId = FirstApn#'APN-Configuration'.'Context-Identifier',
+					ApnCfgProf = #'APN-Configuration-Profile'{'Context-Identifier' = DefaultCtxId,
+										  'All-APN-Configurations-Included-Indicator'=Compl,
+										  'APN-Configuration' = ApnCfgList},
+
+					% put together the Subscription-Data and finally the ULA response
+					SubscrData = #'Subscription-Data'{'MSISDN' = Msisdn,
+
+									  'Network-Access-Mode' = 0, % PACKET_AND_CIRCUIT
+									  'GPRS-Subscription-Data' = GSubD,
+									  % Subscriber-Status must be present in ULA
+									  'Subscriber-Status' = 0,
+									  % AMBR must be present if this is an ULA; let's permit 100MBps UL + DL
+									  'AMBR' = #'AMBR'{'Max-Requested-Bandwidth-UL' = 100000000,
+											   'Max-Requested-Bandwidth-DL' = 100000000},
+									  'APN-Configuration-Profile' = ApnCfgProf},
+					Resp = #'ULA'{'Session-Id' = SessionId, 'Auth-Session-State' = 1,
+						      'Origin-Host' = OH, 'Origin-Realm' = OR,
+						      'Result-Code' = 2001,
+						      'Subscription-Data' = SubscrData, 'ULA-Flags' = 0};
 				#{message_type:=location_upd_err, cause:=Cause} ->
 					{Res, ExpRes} = gsup_cause2dia(Cause),
 					Resp = #'ULA'{'Session-Id'= SessionId, 'Auth-Session-State'=1,
@@ -224,6 +275,7 @@ handle_request(#diameter_packet{msg = Req, errors = []}, _SvcName, {_, Caps}) wh
 						      'Result-Code'=fixme}
 			end
 	end,
+	lager:info("ULR Resp: ~p~n", [Resp]),
 	{reply, Resp};
 
 handle_request(Packet, _SvcName, {_,_}) ->
