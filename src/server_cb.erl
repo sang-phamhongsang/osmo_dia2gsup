@@ -180,7 +180,16 @@ handle_request(#diameter_packet{msg = Req, errors = []}, _SvcName, {_, Caps}) wh
 	NumUgran = req_num_of_vec(ReqUG),
 	lager:info("Num EUTRAN=~p, UTRAN=~p~n", [NumEutran, NumUgran]),
 	% construct GSUP request to HLR and transceive it
-	GsupTx = #{message_type => send_auth_info_req, imsi => list_to_binary(UserName)},
+	GsupTx1 = #{message_type => send_auth_info_req, imsi => list_to_binary(UserName)},
+	case ReqEU of
+		#'Requested-EUTRAN-Authentication-Info'{'Re-Synchronization-Info' = ReSyncInfo}
+		when is_binary(ReSyncInfo) ->
+			GsupTx2 = #{rand => string:substr(ReSyncInfo, 1, 16),
+				    auts => string:substr(ReSyncInfo, 17)};
+		_ ->
+			GsupTx2 = #{}
+	end,
+	GsupTx = maps:merge(GsupTx1, GsupTx2),
 	GsupRx = gen_server:call(gsup_client, {transceive_gsup, GsupTx, send_auth_info_res, send_auth_info_err}),
 	lager:info("GsupRx: ~p~n", [GsupRx]),
 	% construct DIAMETER AIA response
