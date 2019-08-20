@@ -68,11 +68,6 @@ init(State) ->
 	Proto = application:get_env(osmo_dia2gsup, diameter_proto, sctp),
 	listen({address, Proto, element(2,inet:parse_address(Ip)), Port}),
 	lager:info("Diameter HSS Application started on IP ~s, ~p port ~p~n", [Ip, Proto, Port]),
-	% GSUP side
-	HlrIp = application:get_env(osmo_dia2gsup, hlr_ip, "127.0.0.1"),
-	HlrPort = application:get_env(osmo_dia2gsup, hlr_port, 4222),
-	lager:info("Connecting to GSUP HLR on IP ~s port ~p~n", [HlrIp, HlrPort]),
-	{ok, _Pid} = gen_server:start_link({local, gsup_client}, gsup_client, [HlrIp, HlrPort, []], [{debug, [trace]}]),
 	{ok, State}.
 
 %% @callback gen_server

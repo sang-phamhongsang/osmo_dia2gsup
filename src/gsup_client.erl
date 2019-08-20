@@ -64,10 +64,17 @@ init([Address, Port, Options]) ->
 	ipa_proto:init(),
 	% register the GSUP codec with the IPA core; ignore result as we mgiht be doing this multiple times
 	ipa_proto:register_codec(?IPAC_PROTO_EXT_GSUP, fun gsup_protocol:encode/1, fun gsup_protocol:decode/1),
-	{ok, {Socket, IpaPid}} = ipa_proto:connect(Address, Port, Options),
-	true = ipa_proto:register_stream(Socket, ?IPAC_PROTO_EXT_GSUP, {process_id, self()}),
-	ipa_proto:unblock(Socket),
-	{ok, #gsupc_state{socket=Socket, ipa_pid=IpaPid}}.
+	lager:info("Connecting to GSUP HLR on IP ~s port ~p~n", [Address, Port]),
+	case ipa_proto:connect(Address, Port, Options) of
+		{ok, {Socket, IpaPid}} ->
+			lager:info("connected!~n", []),
+			true = ipa_proto:register_stream(Socket, ?IPAC_PROTO_EXT_GSUP, {process_id, self()}),
+			ipa_proto:unblock(Socket),
+			{ok, #gsupc_state{socket=Socket, ipa_pid=IpaPid}};
+		{error, econnrefused} ->
+			timer:sleep(5000),
+			{stop, connrefused}
+	end.
 
 
 % send a given GSUP message and synchronously wait for message type ExpRes or ExpErr
@@ -90,6 +97,9 @@ handle_cast(Info, S) ->
 	error_logger:error_report(["unknown handle_cast", {module, ?MODULE}, {info, Info}, {state, S}]),
 	{noreply, S}.
 
+handle_info({ipa_closed, _}, S) ->
+	lager:error("GSUP connection has been closed, supervisor should reconnect us"),
+	{stop, ipa_closed, S};
 handle_info(Info, S) ->
 	error_logger:error_report(["unknown handle_info", {module, ?MODULE}, {info, Info}, {state, S}]),
 	{noreply, S}.
