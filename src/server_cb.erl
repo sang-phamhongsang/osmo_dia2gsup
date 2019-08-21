@@ -211,7 +211,7 @@ handle_request(#diameter_packet{msg = Req, errors = []}, _SvcName, {_, Caps}) wh
 	{reply, Resp};
 
 handle_request(#diameter_packet{msg = Req, errors = []}, _SvcName, {_, Caps}) when is_record(Req, 'ULR') ->
-	% extract relevant fields from DIAMETER AIR
+	% extract relevant fields from DIAMETER ULR
 	#diameter_caps{origin_host = {OH,_}, origin_realm = {OR,_}} = Caps,
 	#'ULR'{'Session-Id' = SessionId,
 	       'RAT-Type' = RatType,
