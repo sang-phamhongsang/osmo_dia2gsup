@@ -100,6 +100,22 @@ req_num_of_vec([#'Requested-UTRAN-GERAN-Authentication-Info'{'Number-Of-Requeste
 req_num_of_vec([#'Requested-UTRAN-GERAN-Authentication-Info'{'Number-Of-Requested-Vectors'=[Num]}]) -> Num;
 req_num_of_vec(_) -> false.
 
+
+-type binary_or_false() :: false | binary().
+-spec req_resynchronization_info([tuple()]) -> binary_or_false().
+req_resynchronization_info([#'Requested-EUTRAN-Authentication-Info'{'Re-Synchronization-Info'=[]}]) ->
+	false;
+req_resynchronization_info([#'Requested-EUTRAN-Authentication-Info'{'Re-Synchronization-Info'=[Info]}]) ->
+	list_to_binary(Info);
+
+req_resynchronization_info([#'Requested-UTRAN-GERAN-Authentication-Info'{'Re-Synchronization-Info'=[]}]) ->
+	false;
+req_resynchronization_info([#'Requested-UTRAN-GERAN-Authentication-Info'{'Re-Synchronization-Info'=[Info]}]) ->
+	list_to_binary(Info);
+
+req_resynchronization_info(_) ->
+	false.
+
 -define(PDP_TYPE_DEFAULT, <<0,0,0,16#21>>).	% IPv4
 -define(PDP_QOS_DEFAULT, <<0,0,0,0,0,0,0,0,0,0,0,0,0,0>>). % fixme
 
@@ -188,13 +204,14 @@ handle_request(#diameter_packet{msg = Req, errors = []}, _SvcName, {_, Caps}) wh
 	% construct GSUP request to HLR and transceive it
 	GsupTx1 = #{message_type => send_auth_info_req, imsi => list_to_binary(UserName),
 		    supported_rat_types => [rat_eutran_sgs], current_rat_type => rat_eutran_sgs},
-	case ReqEU of
-		#'Requested-EUTRAN-Authentication-Info'{'Re-Synchronization-Info' = ReSyncInfo}
-		when is_binary(ReSyncInfo) ->
-			GsupTx2 = #{rand => string:substr(ReSyncInfo, 1, 16),
-				    auts => string:substr(ReSyncInfo, 17)};
-		_ ->
-			GsupTx2 = #{}
+	ResyncInfo = req_resynchronization_info(ReqEU),
+	case ResyncInfo of
+		false ->
+			GsupTx2 = #{};
+		ValidResyncInfo ->
+			lager:info("ResyncInfo is valid ~p", [ResyncInfo]),
+			GsupTx2 = #{rand => binary:part(ValidResyncInfo, 0, 16),
+				    auts => binary:part(ValidResyncInfo, 16, 14)}
 	end,
 	GsupTx = maps:merge(GsupTx1, GsupTx2),
 	GsupRx = gen_server:call(gsup_client, {transceive_gsup, GsupTx, send_auth_info_res, send_auth_info_err}),
