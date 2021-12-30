@@ -36,6 +36,7 @@
 -behaviour(gen_server).
 
 -include_lib("osmo_gsup/include/gsup_protocol.hrl").
+-include_lib("osmo_ss7/include/ipa.hrl").
 
 -define(IPAC_PROTO_EXT_GSUP,	{osmo, 5}).
 
@@ -65,8 +66,19 @@ init([Address, Port, Options]) ->
 	% register the GSUP codec with the IPA core; ignore result as we mgiht be doing this multiple times
 	ipa_proto:register_codec(?IPAC_PROTO_EXT_GSUP, fun gsup_protocol:encode/1, fun gsup_protocol:decode/1),
 	lager:info("Connecting to GSUP HLR on IP ~s port ~p~n", [Address, Port]),
+        CcmOptions = #ipa_ccm_options{
+                serial_number="HSS-00-00-00-00-00-00",
+                unit_id="0/0/0",
+                mac_address="00:00:00:00:00:00",
+                location="00:00:00:00:00:00",
+                unit_type="00:00:00:00:00:00",
+                equipment_version="00:00:00:00:00:00",
+                sw_version="00:00:00:00:00:00",
+                unit_name="HSS-00-00-00-00-00-00"
+                },
 	case ipa_proto:connect(Address, Port, Options) of
 		{ok, {Socket, IpaPid}} ->
+			ipa_proto:set_ccm_options(Socket, CcmOptions),
 			lager:info("connected!~n", []),
 			true = ipa_proto:register_stream(Socket, ?IPAC_PROTO_EXT_GSUP, {process_id, self()}),
 			ipa_proto:unblock(Socket),
