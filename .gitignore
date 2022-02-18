@@ -1,2 +1,11 @@
-_build
+_build/
+include/
+log/
+
+rebar.lock
 *.beam
+erl_crash.dump
+
+src/diameter_3gpp*
+src/diameter_rfc*
+src/diameter_etsi*
