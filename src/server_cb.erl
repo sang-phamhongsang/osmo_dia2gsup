@@ -85,7 +85,13 @@ compute_kasme(Ck, Ik, VplmnId, Autn) ->
 	Autn6 = binary_part(Autn, 0, 6),
 	K = <<Ck:16/binary, Ik:16/binary>>,
 	S = <<16, VplmnId:3/binary, 0, 3, Autn6:6/binary, 0, 6>>,
-	crypto:hmac(sha256, K, S, 32).
+	Release = erlang:system_info(otp_release),
+	if
+		Release >= "24" ->
+			crypto:macN(hmac, sha256, K, S, 32);
+		true ->
+			crypto:hmac(sha256, K, S, 32)
+	end.
 
 -spec req_num_of_vec([tuple()]) -> int_or_false().
 req_num_of_vec([#'Requested-EUTRAN-Authentication-Info'{'Number-Of-Requested-Vectors'=[]}]) -> false;
