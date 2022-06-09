@@ -5,6 +5,8 @@
 -include_lib("diameter/include/diameter_gen_base_rfc6733.hrl").
 %-include_lib("diameter_settings.hrl").
 
+-export([main/1]).
+
 % API
 -export([start_link/0]).
 -export([start/0, stop/0]).
@@ -53,6 +55,10 @@ start() ->
 
 stop() ->
 	gen_server:cast(?SERVER, stop).
+
+main(_Args) ->
+	application:ensure_all_started(?MODULE),
+	timer:sleep(infinity).
 
 %% ------------------------------------------------------------------
 %% gen_server Function Definitions
