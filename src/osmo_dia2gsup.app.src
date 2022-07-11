@@ -6,7 +6,9 @@
 			kernel,
 			stdlib,
 			lager,
-			diameter
+			diameter,
+			osmo_gsup,
+			osmo_ss7
 			]},
 	{mod, {osmo_dia2gsup_app, []}},
 	{env, []}
