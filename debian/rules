@@ -1,0 +1,44 @@
+#!/usr/bin/make -f
+export DH_VERBOSE=1
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+include /usr/share/dpkg/default.mk
+export ERL_COMPILER_OPTIONS=deterministic
+
+BUILD_TARGET=rebar_compile
+TEST_TARGET=rebar_eunit
+
+.PHONY: build clean test install configure
+
+clean_debhelper:
+	$(H)$(call empty_trash)
+	$(H)$(RM) -rf debian/trash
+
+
+build: $(BUILD_TARGET)
+
+test: $(TEST_TARGET)
+
+configure:
+
+clean: clean_debhelper
+	$(H)echo $@
+	rebar3 clean skip_deps=true -vv
+	$(H)rm -rf ebin/*.beam
+	$(H)rm -rf ebin/*.app
+	$(H)rm -rf c_src/*.o
+	$(H)rm -rf priv/.so
+	$(H)rm -rf .eunit
+
+rebar_compile:
+	$(H)echo $@
+	rebar3 compile skip_deps=true -vv
+
+binary:
+	$(H)echo $@
+	rebar3 escriptize
+
+install:
+	$(H)echo $@
+	$(H)$(call trash, $(DEB_INST_PKG))
+	$(H)install -d
+

@@ -1,0 +1,23 @@
+Source: osmo-diameter2gsup
+Maintainer: Osmocom Community <openbsc@lists.osmocom.org>
+Section:
+Priority: optional
+Build-Depends:  rebar3,
+		erlang-base,
+		erlang-eunit
+Standards-Version: 3.9.8
+#Vcs-Browser:
+#Vcs-Git:
+#Homepage:
+
+Package: osmo-diameter2gsup
+Architecture: any
+Depends: ${shlibs:Depends},
+	 ${misc:Depends},
+	 erlang-bsae, ${erlang-abi:Depends},
+	 ${erlang:Depends}
+Multi-Arch: allowed
+Description: Osmocom DIAMETER to GSUP translator
+ This can be used to translate DIAMETER requests (such as those by an EPC)
+ to the Osmocom specific GSUP protocol, which means you can use OsmoHLR
+ as a simplistic HSS.
