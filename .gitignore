@@ -9,3 +9,11 @@ erl_crash.dump
 src/diameter_3gpp*
 src/diameter_rfc*
 src/diameter_etsi*
+
+/rebar3
+
+/debian/*.debhelper
+/debian/files
+/debian/osmo-diameter2gsup.substvars
+/debian/osmo-diameter2gsup/
+/debian/debhelper-build-stamp

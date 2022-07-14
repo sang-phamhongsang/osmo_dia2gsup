@@ -1,0 +1,5 @@
+osmo-diameter2gsup (0.0.1) UNRELEASED; urgency=medium
+
+  * Initial release. (Closes: #XXXXXX)
+
+ -- Harald Welte <lafore@gnumonks.org>  Tue, 12 Jul 2022 17:51:01 +0200
