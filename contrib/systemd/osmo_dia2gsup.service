@@ -1,0 +1,14 @@
+[Unit]
+Description=Osmocom DIAMETER to GSUP translator
+After=osmo-hlr.service
+
+[Service]
+Type=simple
+Restart=always
+Environment="HOME=/var/lib/osmo_dia2gsup"
+ExecStartPre=/usr/bin/mkdir -p /var/lib/osmo_dia2gsup
+ExecStart=/usr/bin/erl -noshell -sname osmo_dia2gsup -eval "osmo_dia2gsup:start()."
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

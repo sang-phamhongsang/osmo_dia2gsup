@@ -1,0 +1,17 @@
+Source: osmo-diameter2gsup
+Maintainer: Osmocom Community <openbsc@lists.osmocom.org>
+Section: net
+Priority: optional
+Build-Depends: erlang-nox,
+	libpcap-dev,
+	rebar3,
+Standards-Version: 4.5.0
+
+Package: osmo-diameter2gsup
+Architecture: any
+Depends: erlang-nox
+Multi-Arch: allowed
+Description: Osmocom DIAMETER to GSUP translator
+ This can be used to translate DIAMETER requests (such as those by an EPC)
+ to the Osmocom specific GSUP protocol, which means you can use OsmoHLR
+ as a simplistic HSS.

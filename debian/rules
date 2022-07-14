@@ -1,0 +1,18 @@
+#!/usr/bin/make -f
+
+build:
+	rebar3 compile
+	rebar3 escriptize
+	rebar3 eunit
+	for i in _build/default/lib/*; do \
+		libdir=_lib/"$$(basename "$$i")"; \
+		mkdir -pv "$$libdir"; \
+		cp -rv "$$i/ebin" "$$libdir"; \
+	done
+	find _lib -name .empty -delete
+
+clean:
+	rm -rf _build _lib
+
+%:
+	dh $@

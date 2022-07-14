@@ -1,0 +1,5 @@
+osmo-diameter2gsup (0.1.0) unstable; urgency=medium
+
+  * Initial release.
+
+ -- Oliver Smith <osmith@sysmocom.de>  Wed, 14 Jul 2022 14:51:01 +0200
