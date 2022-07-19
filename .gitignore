@@ -2,7 +2,6 @@ _build/
 include/
 log/
 
-rebar.lock
 *.beam
 erl_crash.dump
 
