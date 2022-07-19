@@ -1,2 +1,2 @@
 /contrib/systemd/osmo_dia2gsup.service /lib/systemd/system/
-/_lib/* /usr/lib/erlang/lib/
+/_build/default/bin/osmo-dia2gsup /usr/bin/

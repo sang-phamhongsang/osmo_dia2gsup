@@ -1,18 +1,18 @@
 #!/usr/bin/make -f
-
-build:
-	rebar3 compile
-	rebar3 escriptize
-	rebar3 eunit
-	for i in _build/default/lib/*; do \
-		libdir=_lib/"$$(basename "$$i")"; \
-		mkdir -pv "$$libdir"; \
-		cp -rv "$$i/ebin" "$$libdir"; \
-	done
-	find _lib -name .empty -delete
-
-clean:
-	rm -rf _build _lib
+export DH_VERBOSE=1
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+include /usr/share/dpkg/default.mk
+export ERL_COMPILER_OPTIONS=deterministic
 
 %:
 	dh $@
+
+override_dh_auto_build:
+	dh_auto_build
+	rebar3 compile
+	rebar3 escriptize
+	rebar3 eunit
+
+override_dh_clean:
+	dh_clean
+	rm -rf _build
