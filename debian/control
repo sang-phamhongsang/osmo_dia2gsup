@@ -5,6 +5,7 @@ Priority: optional
 Build-Depends: erlang-nox,
 	libpcap-dev,
 	rebar3,
+	debhelper
 Standards-Version: 4.5.0
 
 Package: osmo-diameter2gsup
