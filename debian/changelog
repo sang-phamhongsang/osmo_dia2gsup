@@ -1,3 +1,16 @@
+osmo-diameter2gsup (0.1.1) unstable; urgency=medium
+
+  [ Daniel Willmann ]
+  * diameter: Change default bind IP to 127.0.0.8
+
+  [ Alexander Couzens ]
+  * add rebar.lock to define known working dependencies
+  * debian: add missing Build-Depends debhelper
+  * debian: rework packaging
+  * debian: add generate_build_dep.sh to vendor erlang dependencies
+
+ -- Oliver Smith <osmith@sysmocom.de>  Fri, 22 Jul 2022 12:48:34 +0200
+
 osmo-diameter2gsup (0.1.0) unstable; urgency=medium
 
   * Initial release.
