@@ -14,4 +14,6 @@ rebar3 get-deps
 mkdir _checkouts
 mv ./_build/default/lib/* _checkouts/
 mv ./_build/default/plugins/* _checkouts/
+# delete erlang bytecode
+find _checkouts/ -iname '*beam' -delete
 tar czf build_dep.tar.gz ./_checkouts
